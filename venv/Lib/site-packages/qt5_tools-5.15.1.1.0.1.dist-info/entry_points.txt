@@ -1,0 +1,3 @@
+[console_scripts]
+qt5-tools = qt5_tools.entrypoints:main
+

@@ -1,7 +1,7 @@
-from search import Search
+from func import Func
 if __name__ == '__main__':
-    print("软件查询： ")
-    id = Search(input())
+    print("软件查询（关键词）： ")
+    id = Func(input())
     info = id.getInfo()
     for i in info.values():
         if i[2] == '2':
@@ -13,3 +13,4 @@ if __name__ == '__main__':
         print("描述: " + i[5])
         print("评分: " + str(int(i[6]) / 10) + "分")
         print("下载地址: " + i[7])
+    print("共找到{}款软件".format(int(id.total[0])))
