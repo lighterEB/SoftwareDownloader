@@ -1,12 +1,13 @@
 import sys
 
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget, QFileDialog
 from PyQt5.QtCore import *
 import MainWin
 import func
+import DownLoadWin
 
-class Action(QMainWindow, MainWin.Ui_MainWindow):
+class Action(QMainWindow, MainWin.Ui_MainWindow, DownLoadWin.Ui_Form):
     def __init__(self):
         super(Action, self).__init__()
         self.setupUi(self)
@@ -40,12 +41,16 @@ class Action(QMainWindow, MainWin.Ui_MainWindow):
 
     def download(self):
         row = self.tableWidgets.currentRow()
-        print(self.b[0][row][7])
-        self.downloadWin = QWidget()
-        self.downloadWin.setMaximumSize(480, 320)
-        self.downloadWin.setWindowTitle("下载")
-        self.downloadWin.setWindowModality(QtCore.Qt.ApplicationModal)
-        self.downloadWin.show()
+        fileName = QFileDialog.getSaveFileName(self, "", self.b[0][row][8])
+        print(type(fileName))
+        print(self.b[0][row][8])
+        self.form = DownLoadWin.Ui_Form()
+        self.form.show()
+
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ class Func:
         info = re.sub(r'\\', '', eval("'{}'".format(info)))
         # 总共找到的软件数量
         self.total = re.findall(re.compile(r'"total":(\d+)'), info)
-        # 软件名
+        # 应用名
         dname = re.findall(re.compile(r'"SoftName":"(.*?)",'), info)
         # 软件版本
         version = re.findall(re.compile(r'versionname>(.*?)<'), info)
@@ -27,6 +27,8 @@ class Func:
         for i in range(len(feature_old)):
             if i % 2 != 0:
                 feature_new.append(feature_old[i])
+        # 文件名
+        filename = re.findall(re.compile(r'filename>(.*?)<'), info)
         # 软件评分
         point = re.findall(re.compile(r'point>(.*?)<'), info)
         # 下载地址
@@ -35,7 +37,7 @@ class Func:
         if self.total is not None:
             for j in range(int(self.total[0])):
                 box = []
-                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl:
+                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename:
                     box.append(i[j])
                 self.data[j] = box
 
