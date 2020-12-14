@@ -32,10 +32,11 @@ class Func:
         # 下载地址
         durl = re.findall(re.compile(r'(http://.*)]]>'), info)
         self.data = {}
-        for j in range(int(self.total[0])):
-            box = []
-            for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl:
-                box.append(i[j])
-            self.data[j] = box
+        if self.total is not None:
+            for j in range(int(self.total[0])):
+                box = []
+                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl:
+                    box.append(i[j])
+                self.data[j] = box
 
         return self.data
