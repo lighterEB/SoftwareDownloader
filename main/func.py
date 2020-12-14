@@ -39,4 +39,4 @@ class Func:
                     box.append(i[j])
                 self.data[j] = box
 
-        return self.data
+        return self.data, self.total
