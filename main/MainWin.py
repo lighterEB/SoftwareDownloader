@@ -148,7 +148,4 @@ class DownloadThread(QtCore.QThread):
     signal = QtCore.pyqtSignal(int)
     def run(self):
         import time
-        for i in range(101):
-            self.signal.emit(i)
-            print(MainWin.data.get())
-            time.sleep(0.1)
+        for i in MainWin.data.
