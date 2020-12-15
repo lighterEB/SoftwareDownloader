@@ -1,60 +1,51 @@
-import sys
+import requests
+import re
 
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget, QFileDialog
-from PyQt5.QtCore import *
-import MainWin
-import func
-import DownloadWin
+class Tencent:
+    def __init__(self, name):
+        self.url = 'https://s.pcmgr.qq.com/tapi/web/searchcgi.php?type=search&callback=searchCallback&keyword=%s&page=1&pernum=30&more=0' % name
+    # 获取信息
+    def getInfo(self):
+        res = requests.get(self.url)
+        info = res.content.decode(encoding='utf-8')
+        info = re.sub(r'\\', '', eval("'{}'".format(info)))
+        print(info)
+        # 总共找到的软件数量
+        self.total = re.findall(re.compile(r'"total":(\d+)'), info)
+        # 应用名
+        dname = re.findall(re.compile(r'"SoftName":"(.*?)",'), info)
+        # 软件版本
+        version = re.findall(re.compile(r'versionname>(.*?)<'), info)
+        # 系统位数
+        osbit = re.findall(re.compile(r'osbit="(\d)"'), info)
+        # 软件大小
+        filesize = re.findall(re.compile(r'filesize>(.*?)<'), info)
+        # 发布时间
+        publishdate = re.findall(re.compile(r'publishdate>(.*?)<'), info)
+        # 软件描述
+        feature_old = re.findall(re.compile(r'feature>.*\n.*CDATA\[(.*)]]>'), info)
+        feature_new = []
+        for i in range(len(feature_old)):
+            if i % 2 != 0:
+                feature_new.append(feature_old[i])
+        # 文件名
+        filename = re.findall(re.compile(r'filename>(.*?)<'), info)
+        # 软件评分
+        point = re.findall(re.compile(r'point>(.*?)<'), info)
+        # 下载地址
+        durl = re.findall(re.compile(r'(http://.*)]]>'), info)
+        # 图片
+        logo = re.findall(re.compile(r'logo48>(.*?)<'), info)
+        self.data = {}
+        if self.total is not None:
+            for j in range(int(self.total[0])):
+                box = []
+                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename, logo:
+                    box.append(i[j])
+                self.data[j] = box
 
-class Action(QMainWindow, MainWin.Ui_MainWindow):
-    def __init__(self):
-        super(Action, self).__init__()
-        self.setupUi(self)
-        self.pushButton.clicked.connect(self.printText)
-    def printText(self):
-        a = self.lineEdit.text()
-        self.b = func.Tencent(a).getInfo()
-        self.tableWidgets.setRowCount(int(self.b[1][0]))
-        for key, item in self.b[0].items():
-            if item[2] == '2':
-                item[0] += '64位'
-            name = QTableWidgetItem(item[0])
-            version = QTableWidgetItem(item[1])
-            fileSize = QTableWidgetItem(str("%.2f" % (int(item[3])/(1024*1024))) + "M")
-            publishDate = QTableWidgetItem(item[4])
-            desc = QTableWidgetItem(item[5])
-            rank = QTableWidgetItem(str(int(item[6]) / 10) + "分")
-            self.downloadButton = QPushButton()
-            self.downloadButton.setText("下载")
-            self.tableWidgets.setItem(key, 0, name)
-            self.tableWidgets.setItem(key, 1, version)
-            self.tableWidgets.setItem(key, 2, fileSize)
-            self.tableWidgets.setItem(key, 3, publishDate)
-            self.tableWidgets.setItem(key, 4, desc)
-            self.tableWidgets.setItem(key, 5, rank)
-            self.tableWidgets.setCellWidget(key, 6, self.downloadButton)
-            self.downloadButton.clicked.connect(self.download)
-        return self.b[0]
-
-    def download(self):
-        row = self.tableWidgets.currentRow()
-        fileName = QFileDialog.getSaveFileName(self, "", self.b[0][row][8])
-        print(fileName)
-        print(self.b[0][row][8])
-        if fileName[0] != '':
-            self.dWin = DownloadWin.Form()
-            self.dWin.setWindowModality(Qt.ApplicationModal)
-            self.dWin.show()
-
-
-
-
-
-
+        return self.data, self.total
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    mainWin = Action()
-    mainWin.show()
-    sys.exit(app.exec_())
+    a = Tencent('哔哩哔哩')
+    print(a.getInfo())

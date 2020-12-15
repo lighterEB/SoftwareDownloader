@@ -33,11 +33,13 @@ class Tencent:
         point = re.findall(re.compile(r'point>(.*?)<'), info)
         # 下载地址
         durl = re.findall(re.compile(r'(http://.*)]]>'), info)
+        # 图片
+        logo = re.findall(re.compile(r'logo48>(.*?)<'), info)
         self.data = {}
         if self.total is not None:
             for j in range(int(self.total[0])):
                 box = []
-                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename:
+                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename, logo:
                     box.append(i[j])
                 self.data[j] = box
 
