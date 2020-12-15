@@ -5,19 +5,17 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushBu
 from PyQt5.QtCore import *
 import MainWin
 import func
-import DownLoadWin
+import DownloadWin
 
-class Action(QMainWindow, MainWin.Ui_MainWindow, DownLoadWin.Ui_Form):
+class Action(QMainWindow, MainWin.Ui_MainWindow):
     def __init__(self):
         super(Action, self).__init__()
         self.setupUi(self)
-
         self.pushButton.clicked.connect(self.printText)
     def printText(self):
         a = self.lineEdit.text()
-        self.b = func.Func(a).getInfo()
+        self.b = func.Tencent(a).getInfo()
         self.tableWidgets.setRowCount(int(self.b[1][0]))
-
         for key, item in self.b[0].items():
             if item[2] == '2':
                 item[0] += '64位'
@@ -42,10 +40,12 @@ class Action(QMainWindow, MainWin.Ui_MainWindow, DownLoadWin.Ui_Form):
     def download(self):
         row = self.tableWidgets.currentRow()
         fileName = QFileDialog.getSaveFileName(self, "", self.b[0][row][8])
-        print(type(fileName))
+        print(fileName)
         print(self.b[0][row][8])
-        self.form = DownLoadWin.Ui_Form()
-        self.form.show()
+        if fileName[0] != '':
+            self.dWin = DownloadWin.Form()
+            self.dWin.setWindowModality(Qt.ApplicationModal)
+            self.dWin.show()
 
 
 

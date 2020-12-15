@@ -1,7 +1,7 @@
 import requests
 import re
 
-class Func:
+class Tencent:
     def __init__(self, name):
         self.url = 'https://s.pcmgr.qq.com/tapi/web/searchcgi.php?type=search&callback=searchCallback&keyword=%s&page=1&pernum=30&more=0' % name
     # 获取信息
