@@ -104,16 +104,17 @@ class Ui_MainWindow(object):
 
 # 驱动主窗口和功能
 class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
-    def __init__(self):
-        super(MainWin, self).__init__()
-        self.setupUi(self)
-        # 绑定搜索按钮信号槽
-        self.searchButton.clicked.connect(self.searchAppInfo)
     data = {}
     entryText = ''
     txt = ''
     row = -1
     infoBox = {}
+    def __init__(self):
+        super(MainWin, self).__init__()
+        self.setupUi(self)
+
+        # 绑定搜索按钮信号槽
+        self.searchButton.clicked.connect(self.searchAppInfo)
     # 查询软件相关信息功能返回字典
     def searchAppInfo(self):
         # 获取输入搜索关键字
@@ -121,15 +122,15 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         if MainWin.entryText == '':
             return
         else:
-            self.searcThread = SearchThread()
-            self.searcThread.signalInfo.connect(self.flushTableWidget)
-            self.searcThread.signalTotal.connect(self.flushTipLabel)
-            self.searcThread.start()
-
+            self.tableWidget.clearContents()
+            self.searchThread = SearchThread()
+            self.searchThread.signalInfo.connect(self.flushTableWidget)
+            self.searchThread.signalTotal.connect(self.flushTipLabel)
+            self.searchThread._signalIsRunning.connect(lambda: self.searchButton.setEnabled(True))
+            self.searchButton.setEnabled(False)
+            self.searchThread.start()
     def flushTableWidget(self, lst):
-        print(lst)
         MainWin.row += 1
-        print(MainWin.txt)
         # 建立下载按钮控件
         k = []
         v = []
@@ -137,6 +138,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             k.append(key)
             v.append(value)
         if MainWin.row <= int(MainWin.txt):
+            print(lst)
             self.downloadButton = QtWidgets.QPushButton()
             # 设置下载按钮图片
             self.downloadButton.setIcon(QtGui.QIcon("../src/images/download.png"))
@@ -171,7 +173,6 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             self.tableWidget.setCellWidget(MainWin.row, 6, self.downloadButton)
             # 给下载按钮建立信号槽
             self.downloadButton.clicked.connect(self.download)
-        print(MainWin.row)
 
     def flushTipLabel(self, txt):
         self.tableWidget.setRowCount(int(txt))
@@ -183,9 +184,9 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
     def download(self):
         MainWin.data = {}
         rowLine = self.tableWidget.currentRow()
-        print(rowLine)
         fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", MainWin.infoBox[0][rowLine][8])
-        MainWin.data[rowLine] = fileName
+        MainWin.data['fileDir'] = fileName
+        MainWin.data['url'] = MainWin.infoBox[0][rowLine][7]
         if fileName[0] != '':
             self.downloadWin = DownloadWin.Form()
             self.downloadWin.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -202,7 +203,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         self.downloadThread.terminate()
     # 刷新下载进度条
     def flushValue(self, value):
-        self.downloadWin.progressBar.setValue(value)
+        self.downloadWin.progressBar.setValue(int(value))
         if value == 100:
             self.downloadWin.pushButton.setText("打开文件")
             self.downloadWin.pushButton.setDisabled(False)
@@ -210,15 +211,30 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
 
 # 下载线程类
 class DownloadThread(QtCore.QThread):
-    signal = QtCore.pyqtSignal(int)
+    signal = QtCore.pyqtSignal(float)
     def run(self):
-        import time
+        res = requests.get(MainWin.data['url'], stream=True)
+        chunk_size = 4096
+        fileSize = res.headers['Content-Length']
+        chunk_temp = 0
+        with open(MainWin.data['fileDir'][0], 'wb') as f:
+            for chunk in res.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    toDo = "%.5f" % (chunk_temp / float(fileSize) * 100)
+                    f.write(chunk)
+                chunk_temp += chunk_size
+                self.signal.emit(float(toDo))
+                print(toDo)
+        f.close()
+
         
 
 class SearchThread(QtCore.QThread):
-
     signalTotal = QtCore.pyqtSignal(str)
     signalInfo = QtCore.pyqtSignal(dict)
+    _signalIsRunning = QtCore.pyqtSignal()
+
+
 
     def run(self):
         # 得到处理后的信息字典
@@ -253,10 +269,13 @@ class SearchThread(QtCore.QThread):
             info[item[5]] = desc
             rank = QtWidgets.QTableWidgetItem(str(int(item[6]) / 10) + "分")
             rank.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[6]] = desc
+            info[item[6]] = rank
             photo = QtGui.QPixmap()
             photo.loadFromData(requests.get("http://pc3.gtimg.com/softmgr/logo/48/{}".format(item[9].lower())).content)
             info['img'] = photo
+            dUrl = item[7]
+            info['url'] = dUrl
             self.signalInfo.emit(info)
         time.sleep(1)
         MainWin.row = -1
+        self._signalIsRunning.emit()
