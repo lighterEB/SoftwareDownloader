@@ -193,6 +193,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             self.downloadWin.setWindowTitle("下载")
             self.downloadWin.dirPath.setText(fileName[0])
             self.downloadWin.dirPath.setReadOnly(True)
+            self.downloadWin.pushButton.clicked.connect(self.openFile)
             self.downloadWin.mySignal.connect(self.terminate)
             self.downloadThread = DownloadThread()
             self.downloadThread.signal.connect(self.flushValue)
@@ -203,10 +204,14 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         self.downloadThread.terminate()
     # 刷新下载进度条
     def flushValue(self, value):
-        self.downloadWin.progressBar.setValue(int(value))
-        if value == 100:
+        self.downloadWin.progressBar.setValue(round(value + 1))
+        if round(value + 1) == 100:
             self.downloadWin.pushButton.setText("打开文件")
             self.downloadWin.pushButton.setDisabled(False)
+    def openFile(self):
+        import os
+        self.downloadWin.close()
+        os.system(MainWin.data['fileDir'][0])
 
 
 # 下载线程类
@@ -226,6 +231,7 @@ class DownloadThread(QtCore.QThread):
                 self.signal.emit(float(toDo))
                 print(toDo)
         f.close()
+        time.sleep(1)
 
         
 
