@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import func
 import DownloadWin
 import requests
+import time
 
 # 主窗口
 class Ui_MainWindow(object):
@@ -28,18 +29,24 @@ class Ui_MainWindow(object):
         self.tableWidget = QtWidgets.QTableWidget(MainWindow)
         self.tableWidget.setGeometry(QtCore.QRect(20, 90, 1156, 490))
         self.tableWidget.setObjectName("tableWidget")
+        # 建立7列
         self.tableWidget.setColumnCount(7)
-        self.tableWidget.setColumnWidth(0,275)
-        self.tableWidget.setColumnWidth(1,120)
-        self.tableWidget.setColumnWidth(2,80)
-        self.tableWidget.setColumnWidth(3,100)
-        self.tableWidget.setColumnWidth(4,450)
-        self.tableWidget.setColumnWidth(5,50)
-        self.tableWidget.setColumnWidth(6,60)
+        # 每列宽度
+        self.tableWidget.setColumnWidth(0, 275)
+        self.tableWidget.setColumnWidth(1, 120)
+        self.tableWidget.setColumnWidth(2, 80)
+        self.tableWidget.setColumnWidth(3, 100)
+        self.tableWidget.setColumnWidth(4, 450)
+        self.tableWidget.setColumnWidth(5, 50)
+        self.tableWidget.setColumnWidth(6, 60)
         self.tableWidget.setEditTriggers(QtWidgets.QTableView.NoEditTriggers)
-        self.tableWidget.setShowGrid(False)
+        # 取消垂直表头
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.setHorizontalHeaderLabels(['名称', '版本', '大小', '发布日期', '描述', '评分', ''])
+        # 设置水平表头无法点击
+        self.tableWidget.horizontalHeader().setSectionsClickable(False)
+        # 设置水平表头无法拖动
+        self.tableWidget.horizontalHeader().setDisabled(True)
         self.widget = QtWidgets.QWidget(MainWindow)
         self.widget.setGeometry(QtCore.QRect(500, 40, 651, 41))
         self.widget.setObjectName("widget")
@@ -103,77 +110,96 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         # 绑定搜索按钮信号槽
         self.searchButton.clicked.connect(self.searchAppInfo)
     data = {}
+    entryText = ''
+    txt = ''
+    row = -1
+    infoBox = {}
     # 查询软件相关信息功能返回字典
     def searchAppInfo(self):
         # 获取输入搜索关键字
-        entryText = self.lineEdit.text()
-        if entryText == '':
+        MainWin.entryText = self.lineEdit.text()
+        if MainWin.entryText == '':
             return
-        # 得到处理后的信息字典
-        self.infoBox = func.Tencent(entryText).getInfo()
+        else:
+            self.searcThread = SearchThread()
+            self.searcThread.signalInfo.connect(self.flushTableWidget)
+            self.searcThread.signalTotal.connect(self.flushTipLabel)
+            self.searcThread.start()
 
-        # 创建表格控件中的行数
-        # infoBox[1][0] = 查询到的软件总数
-        self.tableWidget.setRowCount(int(self.infoBox[1][0]))
-
-        # 遍历查询到的软件信息
-        for key, item in self.infoBox[0].items():
-            # item[2] == osbit(系统位数)
-            # 如果等于2就是64位
-            if item[2] == '2':
-                item[0] += '64位'
-
-            # 每个单元格放入相应项目
-            version = QtWidgets.QTableWidgetItem(item[1])
-            fileSize = QtWidgets.QTableWidgetItem(str("%.2f" % (int(item[3]) / (1024 * 1024))) + "M")
-            publishDate = QtWidgets.QTableWidgetItem(item[4])
-            desc = QtWidgets.QTableWidgetItem(item[5])
-            rank = QtWidgets.QTableWidgetItem(str(int(item[6]) / 10) + "分")
-            logo = item[9]
+    def flushTableWidget(self, lst):
+        print(lst)
+        MainWin.row += 1
+        print(MainWin.txt)
+        # 建立下载按钮控件
+        k = []
+        v = []
+        for key, value in lst.items():
+            k.append(key)
+            v.append(value)
+        if MainWin.row <= int(MainWin.txt):
             self.downloadButton = QtWidgets.QPushButton()
-            self.downloadButton.setText("下载")
-            photo = QtGui.QPixmap()
-            photo.loadFromData(requests.get("http://pc3.gtimg.com/softmgr/logo/48/{}".format(logo)).content)
-            self.headWidget = QtWidgets.QWidget()
-            self.imgLabel = QtWidgets.QLabel()
-            self.imgLabel.setPixmap(photo)
-            self.textLabel = QtWidgets.QLabel()
-            self.textLabel.setText(item[0])
-            self.vercalLayout = QtWidgets.QHBoxLayout(self.headWidget)
-            self.vercalLayout.addWidget(self.imgLabel)
-            self.vercalLayout.addWidget(self.textLabel)
-            self.tableWidget.setCellWidget(key, 0, self.headWidget)
-            #self.tableWidget.setItem(key, 0, name)
-            self.tableWidget.setRowHeight(key, 68)
-            self.tableWidget.setItem(key, 1, version)
-            self.tableWidget.setItem(key, 2, fileSize)
-            self.tableWidget.setItem(key, 3, publishDate)
-            self.tableWidget.setItem(key, 4, desc)
-            self.tableWidget.setItem(key, 5, rank)
-            self.tableWidget.setCellWidget(key, 6, self.downloadButton)
-            self.downloadButton.clicked.connect(self.download)
+            # 设置下载按钮图片
+            self.downloadButton.setIcon(QtGui.QIcon("../src/images/download.png"))
 
-        return self.infoBox[0]
+            # 创建窗口对象
+            self.headWidget = QtWidgets.QWidget()
+            # 创建图像标签对象
+            self.imgLabel = QtWidgets.QLabel()
+            # 将解析的logo片放入图像标签
+            self.imgLabel.setPixmap(v[6])
+            # 创建文字标签
+            self.textLabel = QtWidgets.QLabel()
+            # 设置应用名称到文字标签
+            self.textLabel.setText(k[0])
+            # 创建水平布局，讲窗口对象放进此布局
+            self.hLayout = QtWidgets.QHBoxLayout(self.headWidget)
+            # 将图像标签放入窗口对象所在布局并设置居中
+            self.hLayout.addWidget(self.imgLabel, 0, QtCore.Qt.AlignCenter)
+            # 将文字标签放入窗口对象所在布局
+            self.hLayout.addWidget(self.textLabel)
+            # 将窗口对象添加到每行第一个单元格
+            self.tableWidget.setCellWidget(MainWin.row, 0, self.headWidget)
+            # 设置单元格高度
+            self.tableWidget.setRowHeight(MainWin.row, 68)
+            # 放置项目到对应单元格
+            self.tableWidget.setItem(MainWin.row, 0, v[0])
+            self.tableWidget.setItem(MainWin.row, 1, v[1])
+            self.tableWidget.setItem(MainWin.row, 2, v[2])
+            self.tableWidget.setItem(MainWin.row, 3, v[3])
+            self.tableWidget.setItem(MainWin.row, 4, v[4])
+            self.tableWidget.setItem(MainWin.row, 5, v[5])
+            self.tableWidget.setCellWidget(MainWin.row, 6, self.downloadButton)
+            # 给下载按钮建立信号槽
+            self.downloadButton.clicked.connect(self.download)
+        print(MainWin.row)
+
+    def flushTipLabel(self, txt):
+        self.tableWidget.setRowCount(int(txt))
+        self.tipLabel.setText("共找到{}款相关软件".format(txt))
+        MainWin.txt = int(txt)
+
+
     # 下载信号槽
     def download(self):
         MainWin.data = {}
-        row = self.tableWidget.currentRow()
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", self.infoBox[0][row][8])
-        MainWin.data[row] = fileName
+        rowLine = self.tableWidget.currentRow()
+        print(rowLine)
+        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", MainWin.infoBox[0][rowLine][8])
+        MainWin.data[rowLine] = fileName
         if fileName[0] != '':
             self.downloadWin = DownloadWin.Form()
             self.downloadWin.setWindowModality(QtCore.Qt.ApplicationModal)
             self.downloadWin.setWindowTitle("下载")
             self.downloadWin.dirPath.setText(fileName[0])
             self.downloadWin.dirPath.setReadOnly(True)
-            self.downloadWin.mySignal.connect(self.terminal)
-            self.thread = DownloadThread()
-            self.thread.signal.connect(self.flushValue)
-            self.thread.start()
+            self.downloadWin.mySignal.connect(self.terminate)
+            self.downloadThread = DownloadThread()
+            self.downloadThread.signal.connect(self.flushValue)
+            self.downloadThread.start()
             self.downloadWin.show()
     # 中断下载
-    def terminal(self):
-        self.thread.terminate()
+    def terminate(self):
+        self.downloadThread.terminate()
     # 刷新下载进度条
     def flushValue(self, value):
         self.downloadWin.progressBar.setValue(value)
@@ -188,3 +214,49 @@ class DownloadThread(QtCore.QThread):
     def run(self):
         import time
         
+
+class SearchThread(QtCore.QThread):
+
+    signalTotal = QtCore.pyqtSignal(str)
+    signalInfo = QtCore.pyqtSignal(dict)
+
+    def run(self):
+        # 得到处理后的信息字典
+        MainWin.infoBox = func.Tencent(MainWin.entryText).getInfo()
+
+        # 创建表格控件中的行数
+        # infoBox[1][0] = 查询到的软件总数
+        self.signalTotal.emit(MainWin.infoBox[1][0])
+        # 遍历查询到的软件信息
+        for key, item in MainWin.infoBox[0].items():
+            info = {}
+            # item[2] == osbit(系统位数)
+            # 如果等于2就是64位
+            if item[2] == '2':
+                item[0] += '64位'
+
+            # 设置单元格项目并且全部不可点击
+            name = QtWidgets.QTableWidgetItem()
+            name.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[0]] = name
+            version = QtWidgets.QTableWidgetItem(item[1])
+            version.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[1]] = version
+            fileSize = QtWidgets.QTableWidgetItem(str("%.2f" % (int(item[3]) / (1024 * 1024))) + "M")
+            fileSize.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[3]] = fileSize
+            publishDate = QtWidgets.QTableWidgetItem(item[4])
+            publishDate.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[4]] = publishDate
+            desc = QtWidgets.QTableWidgetItem(item[5])
+            desc.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[5]] = desc
+            rank = QtWidgets.QTableWidgetItem(str(int(item[6]) / 10) + "分")
+            rank.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+            info[item[6]] = desc
+            photo = QtGui.QPixmap()
+            photo.loadFromData(requests.get("http://pc3.gtimg.com/softmgr/logo/48/{}".format(item[9].lower())).content)
+            info['img'] = photo
+            self.signalInfo.emit(info)
+        time.sleep(1)
+        MainWin.row = -1
