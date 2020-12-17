@@ -68,7 +68,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.searchButton.sizePolicy().hasHeightForWidth())
         self.searchButton.setSizePolicy(sizePolicy)
         self.searchButton.setMinimumSize(QtCore.QSize(0, 0))
-        self.searchButton.setIcon(QtGui.QIcon("../src/images/btn_search.png"))
+        self.searchButton.setIcon(QtGui.QIcon("./src/images/btn_search.png"))
         self.searchButton.setObjectName("searchButton")
         self.horizontalLayout.addWidget(self.searchButton)
         self.line = QtWidgets.QFrame(self.widget)
@@ -106,6 +106,7 @@ class Ui_MainWindow(object):
 class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
     data = {}
     entryText = ''
+    selectBox = ''
     txt = ''
     row = -1
     infoBox = {}
@@ -117,6 +118,8 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         self.searchButton.clicked.connect(self.searchAppInfo)
     # 查询软件相关信息功能返回字典
     def searchAppInfo(self):
+        # 获取选择控件文字
+        MainWin.selectBox = self.comboBox.currentText()
         # 获取输入搜索关键字
         MainWin.entryText = self.lineEdit.text()
         if MainWin.entryText == '':
@@ -138,10 +141,9 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             k.append(key)
             v.append(value)
         if MainWin.row <= int(MainWin.txt):
-            print(lst)
             self.downloadButton = QtWidgets.QPushButton()
             # 设置下载按钮图片
-            self.downloadButton.setIcon(QtGui.QIcon("../src/images/download.png"))
+            self.downloadButton.setIcon(QtGui.QIcon("./src/images/download.png"))
 
             # 创建窗口对象
             self.headWidget = QtWidgets.QWidget()
@@ -209,9 +211,13 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             self.downloadWin.pushButton.setText("打开文件")
             self.downloadWin.pushButton.setDisabled(False)
     def openFile(self):
-        import os
-        self.downloadWin.close()
-        os.system(MainWin.data['fileDir'][0])
+        import subprocess
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        item = str(MainWin.data['fileDir'][0])
+        subprocess.Popen(item, shell=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, startupinfo=si)
+        self.downloadThread.terminate()
+
 
 
 # 下载线程类
@@ -219,17 +225,16 @@ class DownloadThread(QtCore.QThread):
     signal = QtCore.pyqtSignal(float)
     def run(self):
         res = requests.get(MainWin.data['url'], stream=True)
-        chunk_size = 4096
+        chunk_size = 1024
         fileSize = res.headers['Content-Length']
         chunk_temp = 0
         with open(MainWin.data['fileDir'][0], 'wb') as f:
             for chunk in res.iter_content(chunk_size=chunk_size):
                 if chunk:
-                    toDo = "%.5f" % (chunk_temp / float(fileSize) * 100)
+                    toDo = "%.5f" % (chunk_temp / float(fileSize)*100)
                     f.write(chunk)
                 chunk_temp += chunk_size
                 self.signal.emit(float(toDo))
-                print(toDo)
         f.close()
         time.sleep(1)
 
@@ -243,45 +248,87 @@ class SearchThread(QtCore.QThread):
 
 
     def run(self):
-        # 得到处理后的信息字典
-        MainWin.infoBox = func.Tencent(MainWin.entryText).getInfo()
+        if MainWin.selectBox == "腾讯":
+            # 得到处理后的信息字典
+            MainWin.infoBox = func.Tencent(MainWin.entryText).getInfo()
 
-        # 创建表格控件中的行数
-        # infoBox[1][0] = 查询到的软件总数
-        self.signalTotal.emit(MainWin.infoBox[1][0])
-        # 遍历查询到的软件信息
-        for key, item in MainWin.infoBox[0].items():
-            info = {}
-            # item[2] == osbit(系统位数)
-            # 如果等于2就是64位
-            if item[2] == '2':
-                item[0] += '64位'
+            # 创建表格控件中的行数
+            # infoBox[1][0] = 查询到的软件总数
+            self.signalTotal.emit(MainWin.infoBox[1][0])
+            # 遍历查询到的软件信息
+            for key, item in MainWin.infoBox[0].items():
+                info = {}
+                # item[2] == osbit(系统位数)
+                # 如果等于2就是64位
+                if item[2] == '2':
+                    item[0] += '64位'
 
-            # 设置单元格项目并且全部不可点击
-            name = QtWidgets.QTableWidgetItem()
-            name.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[0]] = name
-            version = QtWidgets.QTableWidgetItem(item[1])
-            version.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[1]] = version
-            fileSize = QtWidgets.QTableWidgetItem(str("%.2f" % (int(item[3]) / (1024 * 1024))) + "M")
-            fileSize.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[3]] = fileSize
-            publishDate = QtWidgets.QTableWidgetItem(item[4])
-            publishDate.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[4]] = publishDate
-            desc = QtWidgets.QTableWidgetItem(item[5])
-            desc.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[5]] = desc
-            rank = QtWidgets.QTableWidgetItem(str(int(item[6]) / 10) + "分")
-            rank.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
-            info[item[6]] = rank
-            photo = QtGui.QPixmap()
-            photo.loadFromData(requests.get("http://pc3.gtimg.com/softmgr/logo/48/{}".format(item[9].lower())).content)
-            info['img'] = photo
-            dUrl = item[7]
-            info['url'] = dUrl
-            self.signalInfo.emit(info)
-        time.sleep(1)
-        MainWin.row = -1
-        self._signalIsRunning.emit()
+                # 设置单元格项目并且全部不可点击
+                name = QtWidgets.QTableWidgetItem()
+                name.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[0]] = name
+                version = QtWidgets.QTableWidgetItem(item[1])
+                version.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[1]] = version
+                fileSize = QtWidgets.QTableWidgetItem(str("%.2f" % (int(item[3]) / (1024 * 1024))) + "M")
+                fileSize.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[3]] = fileSize
+                publishDate = QtWidgets.QTableWidgetItem(item[4])
+                publishDate.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[4]] = publishDate
+                desc = QtWidgets.QTableWidgetItem(item[5])
+                desc.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[5]] = desc
+                rank = QtWidgets.QTableWidgetItem(str(int(item[6]) / 10) + "分")
+                rank.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[item[6]] = rank
+                photo = QtGui.QPixmap()
+                photo.loadFromData(requests.get("http://pc3.gtimg.com/softmgr/logo/48/{}".format(item[9].lower())).content)
+                info['img'] = photo
+                dUrl = item[7]
+                info['url'] = dUrl
+                self.signalInfo.emit(info)
+            time.sleep(1)
+            MainWin.row = -1
+            self._signalIsRunning.emit()
+        if MainWin.selectBox == "360":
+            # 得到处理后的信息字典
+            MainWin.infoBox = func.QiHu(MainWin.entryText).getInfo()
+            self.signalTotal.emit(str(MainWin.infoBox[1]))
+            for value in MainWin.infoBox[0].values():
+                info = {}
+                # 设置单元格项目并且全部不可点击
+                name = QtWidgets.QTableWidgetItem()
+                name.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['softname']] = name
+                version = QtWidgets.QTableWidgetItem(value['version'])
+                version.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['version']] = version
+                fileSize = QtWidgets.QTableWidgetItem(value['size'])
+                fileSize.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['size']] = fileSize
+                publishDate = QtWidgets.QTableWidgetItem(value['date'])
+                publishDate.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['date']] = publishDate
+                desc = QtWidgets.QTableWidgetItem(value['desc'])
+                desc.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['desc']] = desc
+                rank = QtWidgets.QTableWidgetItem(str(value['poll']) + "分")
+                rank.setFlags(QtCore.Qt.ItemFlags(int("000000", 2)))
+                info[value['poll']] = rank
+                if 'https:' not in value['logo']:
+                    logUrl = 'https:' + value['logo']
+                else:
+                    logUrl = value['logo']
+                imgData = requests.get(logUrl).content
+                print(imgData)
+                photo = QtGui.QPixmap()
+                photo.loadFromData(imgData)
+                photo.scaled(QtCore.QSize(32,32))
+                info['img'] = photo
+                dUrl = value['soft_download']
+                info['url'] = dUrl
+                self.signalInfo.emit(info)
+            time.sleep(1)
+            MainWin.row = -1
+            self._signalIsRunning.emit()

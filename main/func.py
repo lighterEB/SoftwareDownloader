@@ -1,6 +1,7 @@
 import requests
 import re
 
+# 腾讯软件库
 class Tencent:
     def __init__(self, name):
         self.url = 'https://s.pcmgr.qq.com/tapi/web/searchcgi.php?type=search&callback=searchCallback&keyword=%s&page=1&pernum=30&more=0' % name
@@ -44,3 +45,19 @@ class Tencent:
                 self.data[j] = box
 
         return self.data, self.total
+
+# 360软件库
+class QiHu:
+    def __init__(self, name):
+        self.url = "http://bapi.safe.360.cn/soft/search?keyword={}&page=1".format(name)
+
+    # 获取信息
+    def getInfo(self):
+        res = requests.get(self.url)
+        lst = res.json()['data']['list']
+        total = res.json()['data']['total']
+        data = {}
+        for i in range(len(lst)):
+            data[i] = lst[i]
+
+        return data, total

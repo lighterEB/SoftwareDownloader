@@ -1,13 +1,20 @@
 import requests
 
-res = requests.get('https://dl.softmgr.qq.com/original/im/QQ9.4.1.27572.exe', stream=True)
-fileSize = res.headers['Content-Length']
-chunk_size = 1024
-chunk_t = 0
-txt = '■'
-with open("E:\Projects\pythonProject\SoftwareDownloader\QQ9.4.1.27572.exe", "wb") as f:
-    for chunk in res.iter_content(chunk_size=chunk_size):
+# 360软件库
+class QiHu:
+    def __init__(self, name):
+        self.url = "http://bapi.safe.360.cn/soft/search?keyword={}&page=1".format(name)
 
-        jindu = "%.2f"%((chunk_t/float(fileSize)*100))
-        print("已下载{}{}".format(txt*round(float(jindu)), jindu))
-        chunk_t += chunk_size
+    # 获取信息
+    def getInfo(self):
+        res = requests.get(self.url)
+        lst = res.json()['data']['list']
+        total = res.json()['data']['total']
+        data = {}
+        for i in range(len(lst)):
+            data[i] = lst[i]
+        print(data)
+
+
+if __name__ == '__main__':
+    QiHu('qq').getInfo()
