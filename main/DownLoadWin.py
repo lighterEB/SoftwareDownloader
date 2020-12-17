@@ -13,6 +13,7 @@ class Ui_Form(object):
         Form.resize(360, 126)
         Form.setMinimumSize(QtCore.QSize(360, 126))
         Form.setMaximumSize(QtCore.QSize(360, 126))
+        Form.setWindowIcon(QtGui.QIcon(QtGui.QPixmap("./src/images/ico.png")))
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setGeometry(QtCore.QRect(140, 100, 75, 21))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)

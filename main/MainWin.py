@@ -22,9 +22,11 @@ class Ui_MainWindow(object):
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(1196, 640))
         MainWindow.setMaximumSize(QtCore.QSize(1196, 640))
+        MainWindow.setAutoFillBackground(True)
         self.tipLabel = QtWidgets.QLabel(MainWindow)
         self.tipLabel.setGeometry(QtCore.QRect(1000, 590, 141, 31))
         self.tipLabel.setText("")
+        self.tipLabel.setStyleSheet("font-family:'黑体'; font-size: 14px")
         self.tipLabel.setObjectName("tipLabel")
         self.tableWidget = QtWidgets.QTableWidget(MainWindow)
         self.tableWidget.setGeometry(QtCore.QRect(20, 90, 1156, 490))
@@ -60,6 +62,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.lineEdit.sizePolicy().hasHeightForWidth())
         self.lineEdit.setSizePolicy(sizePolicy)
         self.lineEdit.setObjectName("lineEdit")
+        self.lineEdit.setClearButtonEnabled(True)
+        self.lineEdit.setStyleSheet("border: 3px solid black;font-size: 20px")
         self.horizontalLayout.addWidget(self.lineEdit)
         self.searchButton = QtWidgets.QPushButton(self.widget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -78,11 +82,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.line)
         self.label = QtWidgets.QLabel(self.widget)
         self.label.setObjectName("label")
+        self.label.setStyleSheet("color: white; font-size:16px")
         self.horizontalLayout.addWidget(self.label)
         self.comboBox = QtWidgets.QComboBox(self.widget)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
+        self.comboBox.setStyleSheet("color: blue")
         self.horizontalLayout.addWidget(self.comboBox)
         self.line_2 = QtWidgets.QFrame(self.widget)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
@@ -90,6 +96,7 @@ class Ui_MainWindow(object):
         self.line_2.setObjectName("line_2")
         self.horizontalLayout.addWidget(self.line_2)
         self.horizontalLayout.setStretch(0, 2)
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -116,6 +123,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # 绑定搜索按钮信号槽
         self.searchButton.clicked.connect(self.searchAppInfo)
+        self.lineEdit.returnPressed.connect(self.searchAppInfo)
     # 查询软件相关信息功能返回字典
     def searchAppInfo(self):
         # 获取选择控件文字
@@ -144,40 +152,47 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             self.downloadButton = QtWidgets.QPushButton()
             # 设置下载按钮图片
             self.downloadButton.setIcon(QtGui.QIcon("./src/images/download.png"))
+            self.downloadButton.setStyleSheet("background-color: #5A9BB3")
 
             # 创建窗口对象
             self.headWidget = QtWidgets.QWidget()
             # 创建图像标签对象
             self.imgLabel = QtWidgets.QLabel()
             # 将解析的logo片放入图像标签
-            self.imgLabel.setPixmap(v[6])
-            # 创建文字标签
-            self.textLabel = QtWidgets.QLabel()
-            # 设置应用名称到文字标签
-            self.textLabel.setText(k[0])
-            # 创建水平布局，讲窗口对象放进此布局
-            self.hLayout = QtWidgets.QHBoxLayout(self.headWidget)
-            # 将图像标签放入窗口对象所在布局并设置居中
-            self.hLayout.addWidget(self.imgLabel, 0, QtCore.Qt.AlignCenter)
-            # 将文字标签放入窗口对象所在布局
-            self.hLayout.addWidget(self.textLabel)
-            # 将窗口对象添加到每行第一个单元格
-            self.tableWidget.setCellWidget(MainWin.row, 0, self.headWidget)
-            # 设置单元格高度
-            self.tableWidget.setRowHeight(MainWin.row, 68)
-            # 放置项目到对应单元格
-            self.tableWidget.setItem(MainWin.row, 0, v[0])
-            self.tableWidget.setItem(MainWin.row, 1, v[1])
-            self.tableWidget.setItem(MainWin.row, 2, v[2])
-            self.tableWidget.setItem(MainWin.row, 3, v[3])
-            self.tableWidget.setItem(MainWin.row, 4, v[4])
-            self.tableWidget.setItem(MainWin.row, 5, v[5])
-            self.tableWidget.setCellWidget(MainWin.row, 6, self.downloadButton)
-            # 给下载按钮建立信号槽
-            self.downloadButton.clicked.connect(self.download)
+            try:
+                self.imgLabel.setScaledContents(True)
+                self.imgLabel.setPixmap(v[6])
+                # 创建文字标签
+                self.textLabel = QtWidgets.QLabel()
+                # 设置应用名称到文字标签
+                self.textLabel.setText(k[0])
+                # 创建水平布局，讲窗口对象放进此布局
+                self.hLayout = QtWidgets.QHBoxLayout(self.headWidget)
+                # 将图像标签放入窗口对象所在布局并设置居中
+                self.hLayout.addWidget(self.imgLabel, 0, QtCore.Qt.AlignCenter)
+                # 将文字标签放入窗口对象所在布局
+                self.hLayout.addWidget(self.textLabel)
+                # 将窗口对象添加到每行第一个单元格
+                self.tableWidget.setCellWidget(MainWin.row, 0, self.headWidget)
+                # 设置单元格高度
+                self.tableWidget.setRowHeight(MainWin.row, 68)
+                # 放置项目到对应单元格
+                self.tableWidget.setItem(MainWin.row, 0, v[0])
+                self.tableWidget.setItem(MainWin.row, 1, v[1])
+                self.tableWidget.setItem(MainWin.row, 2, v[2])
+                self.tableWidget.setItem(MainWin.row, 3, v[3])
+                self.tableWidget.setItem(MainWin.row, 4, v[4])
+                self.tableWidget.setItem(MainWin.row, 5, v[5])
+                self.tableWidget.setCellWidget(MainWin.row, 6, self.downloadButton)
+                # 给下载按钮建立信号槽
+                self.downloadButton.clicked.connect(self.download)
+            except:
+                self.tableWidget.hideRow(MainWin.row)
+
 
     def flushTipLabel(self, txt):
         self.tableWidget.setRowCount(int(txt))
+        self.tipLabel.setStyleSheet("color:white; font-size: 14px")
         self.tipLabel.setText("共找到{}款相关软件".format(txt))
         MainWin.txt = int(txt)
 
@@ -186,9 +201,17 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
     def download(self):
         MainWin.data = {}
         rowLine = self.tableWidget.currentRow()
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", MainWin.infoBox[0][rowLine][8])
-        MainWin.data['fileDir'] = fileName
-        MainWin.data['url'] = MainWin.infoBox[0][rowLine][7]
+        if MainWin.selectBox == '腾讯':
+            fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", MainWin.infoBox[0][rowLine][8])
+            MainWin.data['fileDir'] = fileName
+            MainWin.data['url'] = MainWin.infoBox[0][rowLine][7]
+        else:
+            import re
+            fileName = MainWin.infoBox[0][rowLine]['soft_download']
+            fileName = re.findall(re.compile(r'/(.*?).exe'), fileName)
+            fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", fileName[0] + '.exe')
+            MainWin.data['url'] = MainWin.infoBox[0][rowLine]['soft_download']
+            MainWin.data['fileDir'] = fileName
         if fileName[0] != '':
             self.downloadWin = DownloadWin.Form()
             self.downloadWin.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -321,10 +344,9 @@ class SearchThread(QtCore.QThread):
                 else:
                     logUrl = value['logo']
                 imgData = requests.get(logUrl).content
-                print(imgData)
                 photo = QtGui.QPixmap()
                 photo.loadFromData(imgData)
-                photo.scaled(QtCore.QSize(32,32))
+                photo.scaled(32, 32, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
                 info['img'] = photo
                 dUrl = value['soft_download']
                 info['url'] = dUrl
