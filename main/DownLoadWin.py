@@ -71,5 +71,6 @@ class Form(QtWidgets.QWidget, Ui_Form):
         content = "1"
         self.mySignal.emit(content)
 
+    # 重写关闭事件
     def closeEvent(self, envent):
         self.sendEditContent()

@@ -25,8 +25,6 @@ class Ui_MainWindow(object):
         MainWindow.setAutoFillBackground(True)
         self.tipLabel = QtWidgets.QLabel(MainWindow)
         self.tipLabel.setGeometry(QtCore.QRect(1000, 590, 141, 31))
-        self.tipLabel.setText("")
-        self.tipLabel.setStyleSheet("font-family:'黑体'; font-size: 14px")
         self.tipLabel.setObjectName("tipLabel")
         self.tableWidget = QtWidgets.QTableWidget(MainWindow)
         self.tableWidget.setGeometry(QtCore.QRect(20, 90, 1156, 490))
@@ -175,7 +173,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
                 # 将窗口对象添加到每行第一个单元格
                 self.tableWidget.setCellWidget(MainWin.row, 0, self.headWidget)
                 # 设置单元格高度
-                self.tableWidget.setRowHeight(MainWin.row, 68)
+                self.tableWidget.setRowHeight(MainWin.row, 128)
                 # 放置项目到对应单元格
                 self.tableWidget.setItem(MainWin.row, 0, v[0])
                 self.tableWidget.setItem(MainWin.row, 1, v[1])
@@ -188,7 +186,6 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.downloadButton.clicked.connect(self.download)
             except:
                 self.tableWidget.hideRow(MainWin.row)
-
 
     def flushTipLabel(self, txt):
         self.tableWidget.setRowCount(int(txt))
@@ -208,8 +205,8 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             import re
             fileName = MainWin.infoBox[0][rowLine]['soft_download']
-            fileName = re.findall(re.compile(r'/(.*?).exe'), fileName)
-            fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", fileName[0] + '.exe')
+            fileName = fileName.split('/')[-1]
+            fileName = QtWidgets.QFileDialog.getSaveFileName(self, "", fileName)
             MainWin.data['url'] = MainWin.infoBox[0][rowLine]['soft_download']
             MainWin.data['fileDir'] = fileName
         if fileName[0] != '':
