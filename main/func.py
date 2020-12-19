@@ -33,7 +33,7 @@ class Tencent:
         # 软件评分
         point = re.findall(re.compile(r'point>(.*?)<'), info)
         # 下载地址
-        durl = re.findall(re.compile(r'(http://.*)]]>'), info)
+        durl = list(set(re.findall(re.compile(r'(http|https://.*)]]>'), info)))
         # 图片
         logo = re.findall(re.compile(r'logo48>(.*?)<'), info)
         self.data = {}
@@ -42,8 +42,7 @@ class Tencent:
                 box = []
                 for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename, logo:
                     box.append(i[j])
-                self.data[j] = box
-
+                    self.data[j] = box
         return self.data, self.total
 
 # 360软件库
@@ -61,3 +60,6 @@ class QiHu:
             data[i] = lst[i]
 
         return data, total
+
+if __name__ == '__main__':
+    Tencent("visual studio").getInfo()
