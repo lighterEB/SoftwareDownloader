@@ -246,6 +246,7 @@ class DownloadThread(QtCore.QThread):
     def run(self):
         res = requests.get(MainWin.data['url'], stream=True)
         chunk_size = 1024
+        # 获取文件大小
         fileSize = res.headers['Content-Length']
         chunk_temp = 0
         with open(MainWin.data['fileDir'][0], 'wb') as f:
