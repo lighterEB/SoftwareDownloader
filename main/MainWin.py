@@ -223,7 +223,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
             self.downloadWin.show()
     # 中断下载
     def terminate(self):
-        self.downloadThread.terminate()
+        self.downloadThread.exit(1)
     # 刷新下载进度条
     def flushValue(self, value):
         self.downloadWin.progressBar.setValue(round(value + 1))
@@ -236,7 +236,7 @@ class MainWin(QtWidgets.QMainWindow, Ui_MainWindow):
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         item = str(MainWin.data['fileDir'][0])
         subprocess.Popen(item, shell=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, startupinfo=si)
-        self.downloadThread.terminate()
+        self.downloadThread.exit(0)
 
 
 

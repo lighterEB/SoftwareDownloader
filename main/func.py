@@ -33,7 +33,9 @@ class Tencent:
         # 软件评分
         point = re.findall(re.compile(r'point>(.*?)<'), info)
         # 下载地址
-        durl = list(set(re.findall(re.compile(r'(http|https://.*)]]>'), info)))
+        durl_old = (re.findall(re.compile(r'(http|https://.*)]]>'), info))
+        durl = list(set(durl_old))
+        durl.sort(key=durl_old.index)
         # 图片
         logo = re.findall(re.compile(r'logo48>(.*?)<'), info)
         self.data = {}
@@ -60,6 +62,3 @@ class QiHu:
             data[i] = lst[i]
 
         return data, total
-
-if __name__ == '__main__':
-    Tencent("visual studio").getInfo()
