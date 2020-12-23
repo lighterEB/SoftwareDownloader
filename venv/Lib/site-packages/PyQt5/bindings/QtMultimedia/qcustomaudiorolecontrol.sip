@@ -20,6 +20,8 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+%If (Qt_5_11_0 -)
+
 class QCustomAudioRoleControl : QMediaControl
 {
 %TypeHeaderCode
@@ -38,3 +40,5 @@ signals:
 protected:
     explicit QCustomAudioRoleControl(QObject *parent /TransferThis/ = 0);
 };
+
+%End

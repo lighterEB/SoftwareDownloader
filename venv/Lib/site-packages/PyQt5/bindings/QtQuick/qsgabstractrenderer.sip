@@ -65,7 +65,7 @@ public:
     QColor clearColor() const;
     void setClearMode(QSGAbstractRenderer::ClearMode mode);
     QSGAbstractRenderer::ClearMode clearMode() const;
-    virtual void renderScene(GLuint fboId = 0) = 0;
+    virtual void renderScene(uint fboId = 0) = 0;
 
 signals:
     void sceneGraphChanged();

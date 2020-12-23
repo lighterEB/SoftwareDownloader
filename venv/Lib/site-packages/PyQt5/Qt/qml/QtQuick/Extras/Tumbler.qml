@@ -239,7 +239,7 @@ Control {
             console.warn("Tumbler::insertColumn(): you cannot add a column to multiple Tumblers")
             return null;
         }
-        if (index >= 0 && index <= columnCount && object.Accessible.role === Accessible.ColumnHeader) {
+        if (index >= 0 && index <= columnCount && object.accessibleRole === Accessible.ColumnHeader) {
             object.__tumbler = tumbler;
             object.__index = index;
             columnModel.insert(index, { columnObject: object });
@@ -259,7 +259,7 @@ Control {
     Component.onCompleted: {
         for (var i = 0; i < data.length; ++i) {
             var column = data[i];
-            if (column.Accessible.role === Accessible.ColumnHeader)
+            if (column.accessibleRole === Accessible.ColumnHeader)
                 addColumn(column);
         }
     }

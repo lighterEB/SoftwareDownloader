@@ -136,7 +136,7 @@ QtObject {
     */
     property Component delegate
 
-    Accessible.role: Accessible.ColumnHeader
+    property int accessibleRole: Accessible.ColumnHeader
 
     /*! \qmlmethod void TableViewColumn::resizeToContents()
         Resizes the column so that the implicitWidth of the contents on every row will fit.

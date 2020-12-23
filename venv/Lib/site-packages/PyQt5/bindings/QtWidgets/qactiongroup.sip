@@ -54,7 +54,7 @@ public:
 
     enum class ExclusionPolicy
     {
-        None,
+        None /PyName=None_/,
         Exclusive,
         ExclusiveOptional,
     };

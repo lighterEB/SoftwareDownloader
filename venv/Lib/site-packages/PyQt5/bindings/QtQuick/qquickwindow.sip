@@ -124,8 +124,12 @@ public:
     QQuickItem *mouseGrabberItem() const;
     bool sendEvent(QQuickItem *, QEvent *);
     QImage grabWindow() /ReleaseGIL/;
+%If (PyQt_OpenGL)
     void setRenderTarget(QOpenGLFramebufferObject *fbo);
+%End
+%If (PyQt_OpenGL)
     QOpenGLFramebufferObject *renderTarget() const;
+%End
     void setRenderTarget(uint fboId, const QSize &size);
     uint renderTargetId() const;
     QSize renderTargetSize() const;
@@ -146,7 +150,9 @@ public:
     bool isPersistentOpenGLContext() const;
     void setPersistentSceneGraph(bool persistent);
     bool isPersistentSceneGraph() const;
+%If (PyQt_OpenGL)
     QOpenGLContext *openglContext() const;
+%End
 
 signals:
     void frameSwapped();
@@ -198,7 +204,9 @@ signals:
 
 public:
 %If (Qt_5_2_0 -)
+%If (PyQt_OpenGL)
     void resetOpenGLState();
+%End
 %End
 %If (Qt_5_3_0 -)
 
@@ -211,7 +219,9 @@ public:
 
 signals:
 %If (Qt_5_3_0 -)
+%If (PyQt_OpenGL)
     void openglContextCreated(QOpenGLContext *context);
+%End
 %End
 %If (Qt_5_3_0 -)
     void afterSynchronizing();

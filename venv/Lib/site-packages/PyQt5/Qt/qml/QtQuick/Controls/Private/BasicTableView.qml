@@ -255,7 +255,7 @@ ScrollView {
             console.warn(__viewTypeName + "::insertColumn(): you cannot add a column to multiple views")
             return null
         }
-        if (index >= 0 && index <= columnCount && object.Accessible.role === Accessible.ColumnHeader) {
+        if (index >= 0 && index <= columnCount && object.accessibleRole === Accessible.ColumnHeader) {
             object.__view = root
             columnModel.insert(index, {columnItem: object})
             if (root.__columns[index] !== object) {
@@ -351,7 +351,7 @@ ScrollView {
     Component.onCompleted: {
         for (var i = 0; i < __columns.length; ++i) {
             var column = __columns[i]
-            if (column.Accessible.role === Accessible.ColumnHeader)
+            if (column.accessibleRole === Accessible.ColumnHeader)
                 addColumn(column)
         }
     }

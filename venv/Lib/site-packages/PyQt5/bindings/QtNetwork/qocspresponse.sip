@@ -45,7 +45,7 @@ enum class QOcspCertificateStatus
 
 enum class QOcspRevocationReason
 {
-    None,
+    None /PyName=None_/,
     Unspecified,
     KeyCompromise,
     CACompromise,

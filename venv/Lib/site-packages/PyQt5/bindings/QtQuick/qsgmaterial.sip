@@ -56,7 +56,9 @@ public:
         QRect viewportRect() const;
         QRect deviceRect() const;
         float determinant() const;
+%If (PyQt_OpenGL)
         QOpenGLContext *context() const;
+%End
 %If (Qt_5_1_0 -)
         QMatrix4x4 projectionMatrix() const;
 %End
@@ -124,28 +126,44 @@ public:
         }
 %End
 
+%If (PyQt_OpenGL)
     QOpenGLShaderProgram *program();
+%End
 
 protected:
+%If (PyQt_OpenGL)
     virtual void compile();
+%End
     virtual void initialize();
 %If (Qt_5_2_0 -)
+%If (PyQt_OpenGL)
     virtual const char *vertexShader() const;
 %End
+%End
 %If (- Qt_5_2_0)
+%If (PyQt_OpenGL)
     virtual const char *vertexShader() const = 0;
 %End
+%End
 %If (Qt_5_2_0 -)
+%If (PyQt_OpenGL)
     virtual const char *fragmentShader() const;
 %End
+%End
 %If (- Qt_5_2_0)
+%If (PyQt_OpenGL)
     virtual const char *fragmentShader() const = 0;
 %End
-%If (Qt_5_2_0 -)
-    void setShaderSourceFile(QOpenGLShader::ShaderType type, const QString &sourceFile);
 %End
 %If (Qt_5_2_0 -)
+%If (PyQt_OpenGL)
+    void setShaderSourceFile(QOpenGLShader::ShaderType type, const QString &sourceFile);
+%End
+%End
+%If (Qt_5_2_0 -)
+%If (PyQt_OpenGL)
     void setShaderSourceFiles(QOpenGLShader::ShaderType type, const QStringList &sourceFiles);
+%End
 %End
 
 private:

@@ -81,7 +81,11 @@ class QAbstractVideoSurface : QObject
         {sipName_QCameraViewfinderSettingsControl, &sipType_QCameraViewfinderSettingsControl, -1, 39},
         {sipName_QCameraViewfinderSettingsControl2, &sipType_QCameraViewfinderSettingsControl2, -1, 40},
         {sipName_QCameraZoomControl, &sipType_QCameraZoomControl, -1, 41},
+    #if QT_VERSION >= 0x050b00
         {sipName_QCustomAudioRoleControl, &sipType_QCustomAudioRoleControl, -1, 42},
+    #else
+        {0, 0, -1, 42},
+    #endif
         {sipName_QImageEncoderControl, &sipType_QImageEncoderControl, -1, 43},
         {sipName_QMediaAudioProbeControl, &sipType_QMediaAudioProbeControl, -1, 44},
         {sipName_QMediaAvailabilityControl, &sipType_QMediaAvailabilityControl, -1, 45},

@@ -39,9 +39,13 @@ public:
         Renderer();
         virtual ~Renderer();
         virtual void render() = 0;
+%If (PyQt_OpenGL)
         virtual QOpenGLFramebufferObject *createFramebufferObject(const QSize &size);
+%End
         virtual void synchronize(QQuickFramebufferObject *);
+%If (PyQt_OpenGL)
         QOpenGLFramebufferObject *framebufferObject() const;
+%End
         void update();
         void invalidateFramebufferObject();
     };

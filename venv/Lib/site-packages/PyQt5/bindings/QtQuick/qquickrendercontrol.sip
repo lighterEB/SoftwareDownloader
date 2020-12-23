@@ -36,7 +36,9 @@ public:
     QQuickRenderControl(QObject *parent /TransferThis/ = 0);
 %End
     virtual ~QQuickRenderControl();
+%If (PyQt_OpenGL)
     void initialize(QOpenGLContext *gl);
+%End
     void invalidate();
     void polishItems();
     void render();

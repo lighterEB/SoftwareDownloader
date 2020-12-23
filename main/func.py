@@ -33,16 +33,20 @@ class Tencent:
         # 软件评分
         point = re.findall(re.compile(r'point>(.*?)<'), info)
         # 下载地址
-        durl_old = (re.findall(re.compile(r'(http|https://.*)]]>'), info))
-        durl = list(set(durl_old))
-        durl.sort(key=durl_old.index)
+        dUrl_old = (re.findall(re.compile(r'(http[s]?://.*)]]'), info))
+        dUrl = []
+        for i in range(len(dUrl_old)):
+            if len(dUrl) == 0:
+                dUrl.append(dUrl_old[i])
+            elif dUrl_old[i].split('/')[-1] != dUrl[-1].split('/')[-1]:
+                dUrl.append(dUrl_old[i])
         # 图片
         logo = re.findall(re.compile(r'logo48>(.*?)<'), info)
         self.data = {}
         if self.total is not None:
             for j in range(int(self.total[0])):
                 box = []
-                for i in dname, version, osbit, filesize, publishdate, feature_new, point, durl, filename, logo:
+                for i in dname, version, osbit, filesize, publishdate, feature_new, point, dUrl, filename, logo:
                     box.append(i[j])
                     self.data[j] = box
         return self.data, self.total

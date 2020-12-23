@@ -284,8 +284,8 @@ enum /NoScope/
 
     QSGGeometry(const QSGGeometry::AttributeSet &attribs /KeepReference/, int vertexCount, int indexCount = 0, int indexType = GL_UNSIGNED_SHORT);
     virtual ~QSGGeometry();
-    void setDrawingMode(GLenum mode);
-    GLenum drawingMode() const;
+    void setDrawingMode(unsigned int mode);
+    unsigned int drawingMode() const;
     void allocate(int vertexCount, int indexCount = 0);
     int vertexCount() const;
     void *vertexData();

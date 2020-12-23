@@ -47,7 +47,9 @@ public:
     QSGEngine(QObject *parent /TransferThis/ = 0);
 %End
     virtual ~QSGEngine();
+%If (PyQt_OpenGL)
     void initialize(QOpenGLContext *context);
+%End
     void invalidate();
     QSGAbstractRenderer *createRenderer() const;
     QSGTexture *createTextureFromImage(const QImage &image, QSGEngine::CreateTextureOptions options = QSGEngine::CreateTextureOption()) const;

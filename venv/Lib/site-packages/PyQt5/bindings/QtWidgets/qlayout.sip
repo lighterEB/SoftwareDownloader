@@ -102,7 +102,7 @@ public:
 %End
 
     virtual void addItem(QLayoutItem * /Transfer/) = 0;
-    void removeWidget(QWidget *w);
+    void removeWidget(QWidget *w /TransferBack/);
     void removeItem(QLayoutItem * /TransferBack/);
     virtual Qt::Orientations expandingDirections() const;
     virtual QSize minimumSize() const;
